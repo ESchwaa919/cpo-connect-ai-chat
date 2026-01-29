@@ -33,7 +33,19 @@
     -webkit-text-fill-color: transparent;
     margin-bottom: 0.25rem;
   }
-  .subtitle { color: #94a3b8; font-size: 1rem; margin-bottom: 2.5rem; }
+  .subtitle { color: #94a3b8; font-size: 1rem; margin-bottom: 1.5rem; }
+  .nav { margin-bottom: 1.5rem; }
+  .nav a {
+    color: #94a3b8;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    margin-right: 0.5rem;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+  .nav a:hover, .nav a.active { background: rgba(167,139,250,0.2); color: #c4b5fd; border-color: rgba(167,139,250,0.4); }
   .card {
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.1);
@@ -101,6 +113,11 @@
 <div class="container">
   <h1>CPO Connect // AI</h1>
   <p class="subtitle">30-Day Chat Analysis &middot; 29 Dec 2025 &ndash; 29 Jan 2026</p>
+
+  <div class="nav">
+    <a href="index.html" class="active">AI Channel</a>
+    <a href="general.html">General Channel</a>
+  </div>
 
   <div class="stats-row">
     <div class="stat"><div class="number">~480</div><div class="label">Messages</div></div>

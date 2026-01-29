@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPO Connect // General — 30-Day Chat Analysis</title>
+<meta property="og:title" content="CPO Connect // General — 30-Day Chat Analysis">
+<meta property="og:description" content="~550 messages, 80+ members, 12 key topics. IRL Launch Event, Product Leader Retention, Publishing Platforms, Skills Mapping, and more.">
+<meta property="og:image" content="https://cpo-connect-ai-chat.onrender.com/og-image-general.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://cpo-connect-ai-chat.onrender.com/general.html">
+<meta property="og:type" content="website">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #f97316, #facc15, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.25rem;
+  }
+  .subtitle { color: #94a3b8; font-size: 1rem; margin-bottom: 2.5rem; }
+  .nav { margin-bottom: 1.5rem; }
+  .nav a {
+    color: #94a3b8;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    margin-right: 0.5rem;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+  .nav a:hover, .nav a.active { background: rgba(249,115,22,0.2); color: #fb923c; border-color: rgba(249,115,22,0.4); }
+  .card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(10px);
+  }
+  .card h2 {
+    font-size: 1.15rem;
+    color: #fb923c;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stat {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+  }
+  .stat .number {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #f97316, #facc15);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stat .label { font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem; }
+  .chart-container { position: relative; height: 300px; margin: 1rem 0; }
+  .chart-container-wide { position: relative; height: 350px; margin: 1rem 0; }
+  .trend-list { list-style: none; }
+  .trend-list li {
+    padding: 0.85rem 1rem;
+    border-left: 3px solid #f97316;
+    margin-bottom: 0.75rem;
+    background: rgba(249,115,22,0.06);
+    border-radius: 0 8px 8px 0;
+    line-height: 1.5;
+  }
+  .trend-list li strong { color: #fb923c; }
+  .trend-list li .date { color: #64748b; font-size: 0.8rem; }
+  .tag {
+    display: inline-block;
+    background: rgba(96,165,250,0.15);
+    color: #93c5fd;
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    margin-right: 4px;
+    margin-top: 4px;
+  }
+  .tag.hot { background: rgba(248,113,113,0.2); color: #fca5a5; }
+  .tag.green { background: rgba(52,211,153,0.15); color: #6ee7b7; }
+  .tag.gold { background: rgba(250,204,21,0.15); color: #fde047; }
+  footer { text-align: center; color: #475569; margin-top: 2rem; font-size: 0.8rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>CPO Connect // General</h1>
+  <p class="subtitle">30-Day Chat Analysis &middot; 29 Dec 2025 &ndash; 29 Jan 2026</p>
+
+  <div class="nav">
+    <a href="index.html">AI Channel</a>
+    <a href="general.html" class="active">General Channel</a>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="number">~550</div><div class="label">Messages</div></div>
+    <div class="stat"><div class="number">80+</div><div class="label">Active Members</div></div>
+    <div class="stat"><div class="number">24</div><div class="label">Active Days</div></div>
+    <div class="stat"><div class="number">30+</div><div class="label">New Members Joined</div></div>
+    <div class="stat"><div class="number">12</div><div class="label">Key Topics</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Daily Message Volume</h2>
+    <div class="chart-container-wide">
+      <canvas id="dailyChart"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Top Discussion Topics (by message volume)</h2>
+    <div class="chart-container">
+      <canvas id="topicsChart"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Most Active Contributors</h2>
+    <div class="chart-container">
+      <canvas id="contributorsChart"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Key Trends &amp; Themes</h2>
+    <ol class="trend-list">
+      <li>
+        <strong>1. CPO Connect IRL Launch Event</strong> <span class="tag hot">Biggest Moment</span><br>
+        The inaugural in-person event at Made by Many in London drew a packed house. Over 30 members posted glowing feedback calling it "psychologically safe," "the most open event," and "just the ticket to start the new year." Regional meetup groups spinning up (Hackney coffee, SW London "Swipe-left"). Next IRL event confirmed for March.
+        <div class="date">Jan 22&ndash;23</div>
+      </li>
+      <li>
+        <strong>2. Product Leader Retention Crisis</strong> <span class="tag hot">Deep Thread</span><br>
+        Jessie sparked a major discussion on why product leaders (CPO/VP/Director) have just 1.5&ndash;2.5 year tenure. Michelle Wright delivered a standout post on the "first CPO" dual mandate: transformation vs delivery credibility. Ryan highlighted CTO/CPO clashes and authority gaps. Nick Whitford cited transformation failure rates of 75&ndash;88%. An online event is being organized to go deeper.
+        <div class="date">Jan 21&ndash;22</div>
+      </li>
+      <li>
+        <strong>3. Content &amp; Publishing Platforms</strong> <span class="tag">Creator Economy</span><br>
+        Substack vs Medium vs Beehiiv vs Ghost debated at length. Jason notes LinkedIn reach is cratering (30K followers, some posts shown to 200 people). Sascha refuses Substack on ethical grounds. Caroline warns you don't "own" your LinkedIn newsletter audience. Scott distinguishes "field notes" (for self) from "field guides" (for audience).
+        <div class="date">Jan 8</div>
+      </li>
+      <li>
+        <strong>4. "What Does a Product Manager Do?"</strong> <span class="tag gold">Community Favourite</span><br>
+        Tom R asked how to explain PM in one sentence. Highlights: Mikkel: "I'm accountable for the product decisions that determine what we build, when we build it, and whether it creates real customer and business value." Scotty frames it around the problem solved. Sascha simplifies to "I maximise value." Ashwin uses the Netflix example. Mikkel concedes his parents still think he works in "IT."
+        <div class="date">Jan 23</div>
+      </li>
+      <li>
+        <strong>5. Lead Without Authority &mdash; The Rant</strong> <span class="tag hot">Spicy</span><br>
+        Alyx lights the fuse: "So much responsibility and you're expected to lead without authority. Give me a damn break." Aamna hates the "mini CEO" carrot. Martha raises the HIPPO problem. Mikkel offers the nuanced take: dysfunctional orgs use it as a cop-out, but influence-as-skill is genuinely rare and powerful. Caroline maps 9 forms of power beyond authority.
+        <div class="date">Jan 14</div>
+      </li>
+      <li>
+        <strong>6. Skills Mapping &amp; Team Development</strong> <span class="tag green">Practical</span><br>
+        Robin needs to map PM/dev/designer skills for coaching vs hiring decisions. Caroline shares a 3-bucket heuristic (human skills, technical skills, domain skills) plus the Dreyfus model. Sascha recommends anchoring to team capabilities, not individual roles. Jock shares his Creative Commons skills mapping technique. Lisa recommends Petra Wille's PM Wheel.
+        <div class="date">Jan 16</div>
+      </li>
+      <li>
+        <strong>7. Writing &amp; Personal Branding</strong> <span class="tag">Career</span><br>
+        Carla asks if building a profile through writing is worth it. Jason's honest take: it's oversaturated and filled with AI slop, but do it anyway because it sharpens thinking. Scott shares his decade-long journey from field notes to newsletter to published book. David found his personal site helped after redundancy.
+        <div class="date">Jan 13</div>
+      </li>
+      <li>
+        <strong>8. Product Training Resources</strong> <span class="tag green">Practical</span><br>
+        James Thornett asks for entry-level PM training options. Sascha advocates social, practice-integrated learning over content delivery. Recommendations: Mind the Product (free), Hustle Badger, Product School, FourthRev (6-month course), Matt Walton's cohort courses. Internal peer mentoring and "mini internships" suggested as low-friction alternatives.
+        <div class="date">Jan 7</div>
+      </li>
+      <li>
+        <strong>9. Transformation &amp; Organisational Change</strong> <span class="tag">Leadership</span><br>
+        Spins out of the retention discussion. Caroline shares her Substack article on why transformations fail. Nick cites consulting research showing only 12&ndash;25% success rate. Sascha argues transformation is a team capability, not one person's job. Scott shares that 4 CPOs he coached all reported into the CFO and were seen as "IT cost centres."
+        <div class="date">Jan 22</div>
+      </li>
+      <li>
+        <strong>10. New AI Podcast Pitch</strong> <span class="tag">Content</span><br>
+        Igor pitches a podcast focused on real AI implementation stories, not hype. First episode from eBay. Caroline challenges differentiation from Claire Vo's "How I AI." Sascha wants more on governance and security. Aktar values the practical angle. Consensus: there's space for hype-free, operationally-focused AI content.
+        <div class="date">Jan 14</div>
+      </li>
+      <li>
+        <strong>11. Dev Agencies &amp; Hiring</strong> <span class="tag green">Practical</span><br>
+        Ankur's request for UK/Europe dev agencies (Go, React, Full Stack) triggered a wave of recommendations: Data Art, Vention, UIC Digital, Polish agencies, FX31 (India). Also accessibility audit agencies: Level Access, DIG Inclusion. Siddarth built a Claude skill for accessibility audits.
+        <div class="date">Jan 23</div>
+      </li>
+      <li>
+        <strong>12. The Avios Takeover</strong> <span class="tag gold">Community Joy</span><br>
+        Chanade from IAG Loyalty joins and triggers the most wholesome thread of the month. Business class to Australia on Avios points. BA Amex hacks. Story Points loyalty programme joke. Harry's travel hack: "don't have kids." Chanade adds "growth hacker / community engager" to her CV.
+        <div class="date">Jan 29</div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Community Poll: Caroline's Book Concept</h2>
+    <div class="chart-container" style="height:220px;">
+      <canvas id="pollChart"></canvas>
+    </div>
+    <p style="color:#64748b; font-size:0.85rem; margin-top:0.5rem;">Caroline tested three book concepts with the community. "Capability Breakdowns" won decisively.</p>
+  </div>
+
+  <div class="card">
+    <h2>Sentiment Snapshot</h2>
+    <div class="chart-container" style="height:260px;">
+      <canvas id="sentimentChart"></canvas>
+    </div>
+  </div>
+
+  <footer>Generated 29 Jan 2026 &middot; Analysis of CPO Connect // General WhatsApp Group</footer>
+</div>
+
+<script>
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.1)';
+
+// Daily message volume
+new Chart(document.getElementById('dailyChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Dec 29','Dec 30','Jan 2','Jan 3','Jan 4','Jan 6','Jan 7','Jan 8','Jan 9','Jan 11','Jan 12','Jan 13','Jan 14','Jan 15','Jan 16','Jan 19','Jan 20','Jan 21','Jan 22','Jan 23','Jan 24','Jan 27','Jan 28','Jan 29'],
+    datasets: [{
+      label: 'Messages',
+      data: [2, 4, 5, 8, 1, 4, 28, 30, 8, 3, 3, 35, 32, 12, 22, 2, 8, 45, 72, 55, 4, 8, 10, 40],
+      backgroundColor: 'rgba(249,115,22,0.5)',
+      borderColor: 'rgba(251,146,60,0.8)',
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { backgroundColor: 'rgba(26,26,46,0.95)', titleColor: '#fb923c', bodyColor: '#e0e0e0', borderColor: 'rgba(249,115,22,0.5)', borderWidth: 1 }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { maxRotation: 45 } },
+      y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }
+    }
+  }
+});
+
+// Topics
+new Chart(document.getElementById('topicsChart'), {
+  type: 'bar',
+  data: {
+    labels: ['IRL Launch Event','Product Leader Retention','Publishing Platforms','Explaining PM','Lead w/o Authority','Skills Mapping','Writing & Branding','PM Training','Transformation','AI Podcast Pitch','Dev Agencies','Avios Hacks'],
+    datasets: [{
+      label: 'Est. Messages',
+      data: [65, 55, 35, 30, 25, 28, 22, 20, 22, 18, 20, 25],
+      backgroundColor: [
+        'rgba(248,113,113,0.5)','rgba(248,113,113,0.5)','rgba(96,165,250,0.5)','rgba(250,204,21,0.5)',
+        'rgba(248,113,113,0.5)','rgba(52,211,153,0.5)','rgba(96,165,250,0.5)','rgba(52,211,153,0.5)',
+        'rgba(167,139,250,0.5)','rgba(96,165,250,0.5)','rgba(52,211,153,0.5)','rgba(250,204,21,0.5)'
+      ],
+      borderColor: [
+        'rgba(248,113,113,0.8)','rgba(248,113,113,0.8)','rgba(96,165,250,0.8)','rgba(250,204,21,0.8)',
+        'rgba(248,113,113,0.8)','rgba(52,211,153,0.8)','rgba(96,165,250,0.8)','rgba(52,211,153,0.8)',
+        'rgba(167,139,250,0.8)','rgba(96,165,250,0.8)','rgba(52,211,153,0.8)','rgba(250,204,21,0.8)'
+      ],
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// Contributors
+new Chart(document.getElementById('contributorsChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Jason Knight','Sascha Brossmann','Caroline Clark','Jessie','James Engelbert','Nick Whitford','Mikkel Nielsen','Scotty','Joana','Ozgun Gulsal','Others'],
+    datasets: [{
+      data: [38, 32, 35, 28, 25, 22, 18, 14, 12, 14, 310],
+      backgroundColor: [
+        'rgba(248,113,113,0.7)','rgba(251,146,60,0.7)','rgba(52,211,153,0.7)','rgba(250,204,21,0.7)',
+        'rgba(96,165,250,0.7)','rgba(167,139,250,0.7)','rgba(244,114,182,0.7)','rgba(129,140,248,0.7)',
+        'rgba(45,212,191,0.7)','rgba(253,186,116,0.7)','rgba(71,85,105,0.5)'
+      ],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'right', labels: { padding: 12, usePointStyle: true, pointStyle: 'circle' } }
+    }
+  }
+});
+
+// Poll
+new Chart(document.getElementById('pollChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Capability Breakdowns', 'Beliefs as Operating Systems', 'Training for the Unknown'],
+    datasets: [{
+      label: 'Votes',
+      data: [14, 9, 9],
+      backgroundColor: ['rgba(250,204,21,0.5)', 'rgba(249,115,22,0.4)', 'rgba(249,115,22,0.4)'],
+      borderColor: ['rgba(250,204,21,0.8)', 'rgba(249,115,22,0.6)', 'rgba(249,115,22,0.6)'],
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { stepSize: 5 } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// Sentiment
+new Chart(document.getElementById('sentimentChart'), {
+  type: 'polarArea',
+  data: {
+    labels: ['Supportive / Collaborative','Frustrated / Venting','Practical / Advice-Sharing','Celebratory / Social','Reflective / Philosophical'],
+    datasets: [{
+      data: [30, 15, 25, 20, 10],
+      backgroundColor: [
+        'rgba(52,211,153,0.5)','rgba(248,113,113,0.5)','rgba(96,165,250,0.5)','rgba(250,204,21,0.5)','rgba(167,139,250,0.5)'
+      ],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'right', labels: { padding: 10, usePointStyle: true, pointStyle: 'circle' } }
+    },
+    scales: { r: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { display: false } } }
+  }
+});
+</script>
+</body>
+</html>
