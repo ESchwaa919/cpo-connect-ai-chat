@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPO Connect — February 2026 Chat Analysis</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.25rem;
+  }
+  .subtitle { color: #94a3b8; font-size: 1rem; margin-bottom: 2.5rem; }
+  .subtitle a { color: #a78bfa; text-decoration: none; }
+  .subtitle a:hover { text-decoration: underline; }
+  .card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(10px);
+  }
+  .card h2 {
+    font-size: 1.15rem;
+    color: #c4b5fd;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+  .card h3 {
+    font-size: 1rem;
+    color: #93c5fd;
+    margin-bottom: 0.5rem;
+    margin-top: 1.25rem;
+    font-weight: 600;
+  }
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stat {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+  }
+  .stat .number {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #a78bfa, #60a5fa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stat .label { font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem; }
+  .chart-container { position: relative; height: 300px; margin: 1rem 0; }
+  .chart-container-wide { position: relative; height: 350px; margin: 1rem 0; }
+  .trend-list { list-style: none; }
+  .trend-list li {
+    padding: 0.85rem 1rem;
+    border-left: 3px solid #7c3aed;
+    margin-bottom: 0.75rem;
+    background: rgba(124,58,237,0.08);
+    border-radius: 0 8px 8px 0;
+    line-height: 1.5;
+  }
+  .trend-list li strong { color: #c4b5fd; }
+  .trend-list li .date { color: #64748b; font-size: 0.8rem; }
+  .tag {
+    display: inline-block;
+    background: rgba(96,165,250,0.15);
+    color: #93c5fd;
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    margin-right: 4px;
+    margin-top: 4px;
+  }
+  .tag.hot { background: rgba(248,113,113,0.2); color: #fca5a5; }
+  .tag.green { background: rgba(52,211,153,0.15); color: #6ee7b7; }
+  .tag.amber { background: rgba(251,191,36,0.15); color: #fcd34d; }
+  .tag.pink { background: rgba(244,114,182,0.15); color: #f9a8d4; }
+
+  .tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 0.6rem 1.2rem;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .tab:hover { background: rgba(255,255,255,0.1); color: #e0e0e0; }
+  .tab.active {
+    background: rgba(124,58,237,0.3);
+    border-color: rgba(167,139,250,0.5);
+    color: #c4b5fd;
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .channel-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 99px;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-weight: 600;
+  }
+  .badge-ai { background: rgba(167,139,250,0.2); color: #c4b5fd; }
+  .badge-general { background: rgba(96,165,250,0.2); color: #93c5fd; }
+  .badge-leadership { background: rgba(52,211,153,0.2); color: #6ee7b7; }
+
+  footer { text-align: center; color: #475569; margin-top: 2rem; font-size: 0.8rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>CPO Connect — All Channels</h1>
+  <p class="subtitle">February 2026 Chat Analysis &middot; 1 &ndash; 28 Feb 2026 &middot; <a href="chat-analysis-jan2026.html">&larr; January 2026</a></p>
+
+  <!-- Aggregate stats -->
+  <div class="stats-row">
+    <div class="stat"><div class="number">1,483</div><div class="label">Total Messages</div></div>
+    <div class="stat"><div class="number">3</div><div class="label">Channels</div></div>
+    <div class="stat"><div class="number">28</div><div class="label">Active Days</div></div>
+    <div class="stat"><div class="number">45</div><div class="label">New Members</div></div>
+    <div class="stat"><div class="number">130+</div><div class="label">Active Members</div></div>
+  </div>
+
+  <!-- Channel tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('ai')">// AI <span style="font-size:0.7rem;opacity:0.7">(812)</span></div>
+    <div class="tab" onclick="switchTab('general')">// General <span style="font-size:0.7rem;opacity:0.7">(583)</span></div>
+    <div class="tab" onclick="switchTab('leadership')">// Leadership &amp; Culture <span style="font-size:0.7rem;opacity:0.7">(88)</span></div>
+  </div>
+
+  <!-- ═══════════════════════ AI CHANNEL ═══════════════════════ -->
+  <div id="tab-ai" class="tab-content active">
+
+    <div class="stats-row">
+      <div class="stat"><div class="number">812</div><div class="label">Messages</div></div>
+      <div class="stat"><div class="number">82</div><div class="label">Active Members</div></div>
+      <div class="stat"><div class="number">28</div><div class="label">Active Days</div></div>
+      <div class="stat"><div class="number">19</div><div class="label">New Members</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Daily Message Volume</h2>
+      <div class="chart-container-wide">
+        <canvas id="dailyChartAI"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Most Active Contributors</h2>
+      <div class="chart-container">
+        <canvas id="contributorsAI"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Key Trends &amp; Themes</h2>
+      <ol class="trend-list">
+        <li>
+          <strong>1. Claude Code Skills, Hooks &amp; Workflow Automation</strong> <span class="tag hot">Hottest Topic</span><br>
+          Alastair Preacher shared frustrations with Claude skills failing on multi-step operations, proposing daisy-chained slash commands. Dave Killeen evangelized Claude Code Hooks as the deterministic solution, sharing his Dex project's hooks architecture. Harry Parkes and Graham Reed discussed building automations and MCP connections.
+          <div class="date">Feb 7&ndash;13</div>
+        </li>
+        <li>
+          <strong>2. AGI / ASI Debate &mdash; Hype vs. Reality</strong> <span class="tag hot">Polarizing</span><br>
+          Dave Killeen and Damon argued we are close to AGI. Jason Knight pushed back strongly, arguing LLMs are pattern matching. Sascha Brossmann provided deep philosophical critique dismantling both the "stochastic parrot" argument and uncritical AGI enthusiasm. Caroline Clark brought a psychological lens on the hype machine.
+          <div class="date">Feb 7&ndash;22</div>
+        </li>
+        <li>
+          <strong>3. AI Burnout &amp; Work-Life Balance</strong> <span class="tag hot">Rising Trend</span><br>
+          A TechCrunch article on burnout hitting AI early adopters sparked broad resonance. Matt Stone articulated the inversion where senior leaders become the bottleneck. Harry Parkes built "/balance" &mdash; a Claude-powered tool to enforce usage limits after his wife complained about his Claude obsession. Nick Whitford recommended "4000 Weeks."
+          <div class="date">Feb 10&ndash;28</div>
+        </li>
+        <li>
+          <strong>4. Dex &mdash; AI Chief of Staff</strong> <span class="tag green">Community Event</span><br>
+          Dave Killeen introduced Dex, an open-source AI personal operating system built on Claude Code + Obsidian. His demo session attracted 39 attendees. Caroline Clark wrote a detailed "Getting Started with Dex" guide. Multiple members began adopting it.
+          <div class="date">Feb 7&ndash;28</div>
+        </li>
+        <li>
+          <strong>5. Opus 4.6 Launch &amp; Vibe Coding</strong> <span class="tag green">Practical</span><br>
+          Erik Schwartz flagged the Claude Opus 4.6 release. Mikkel Nielsen called it "absurdly good for frontend work." Dave Killeen built an iPhone and Apple Watch app in 37 minutes. The group compared Claude Code vs. Codex vs. Cursor vs. Lovable stacks.
+          <div class="date">Feb 4&ndash;20</div>
+        </li>
+        <li>
+          <strong>6. Will AI Replace PMs / Software Engineers?</strong> <span class="tag">Philosophical</span><br>
+          Triggered by James Fitzgerald asking about PM automation and later by articles claiming software engineers would go extinct. Martin Rover-Parkes pushed back, calling it "role compression and skill redistribution, not extinction." Harry Parkes highlighted design roles being squeezed more than engineering.
+          <div class="date">Feb 1&ndash;2, Feb 28</div>
+        </li>
+        <li>
+          <strong>7. OpenClaw / Moltbot Security</strong> <span class="tag amber">Cautionary</span><br>
+          Erik Schwartz shared Karpathy's assessment. Siddarth Shukla ran security audits. A PCGamer story about OpenClaw deleting Meta's AI safety director's inbox raised alarm. Laurence Bahrami raised concerns about non-technical people installing harmful packages.
+          <div class="date">Feb 1, Feb 5, Feb 24&ndash;25</div>
+        </li>
+        <li>
+          <strong>8. Enterprise AI &amp; GenAI Gateways</strong> <span class="tag">Practical</span><br>
+          Discussion of Microsoft Copilot adoption challenges, GenAI gateways at Booking.com (Doron), WPP Open (Jen Heape). Erik noted many orgs "tick a box" with Copilot rollouts without real impact, emphasizing mindset shift over technology shift.
+          <div class="date">Feb 2&ndash;4</div>
+        </li>
+        <li>
+          <strong>9. Second Brain / PKM</strong> <span class="tag green">Rising Trend</span><br>
+          Laurence Bahrami's question catalyzed sharing of toolchains: Obsidian + Claude Code, Granola + Notion, Nimbalyst. A general trend emerged toward Obsidian for its local-first, markdown-native approach and better Claude Code integration.
+          <div class="date">Feb 13&ndash;14, Feb 27</div>
+        </li>
+        <li>
+          <strong>10. AI Hype Article Debates</strong> <span class="tag hot">Polarizing</span><br>
+          Matt Shumer's COVID-comparison AI-pace thread and David W. Silva's "I'm Sorry to Burst Your Bubble" generated polarized reactions. Sascha wrote a lengthy philosophical dissection. Jason posted a detailed point-by-point review finding merit on both sides.
+          <div class="date">Feb 11, Feb 21&ndash;22</div>
+        </li>
+        <li>
+          <strong>11. ASIC-Based LLMs (Chat Jimmy / Taalas)</strong> <span class="tag green">Emerging</span><br>
+          Matt Stone introduced Chat Jimmy, a language model running on an ASIC chip instead of GPUs, noting incredible speed and implications for local inference. Jason investigated further, finding a $30M development effort behind it.
+          <div class="date">Feb 26</div>
+        </li>
+        <li>
+          <strong>12. OpenAI Social Graph &amp; Ad Strategy</strong> <span class="tag">Industry</span><br>
+          J Rainey noticed OpenAI asking for contact sharing. Prasana analyzed their trajectory toward "Agentic Commerce." Sascha raised GDPR concerns. Harry Parkes questioned OpenAI's viability. Joana noted OpenAI's financials only work if every human alive becomes a paid subscriber.
+          <div class="date">Feb 16&ndash;17, Feb 23</div>
+        </li>
+        <li>
+          <strong>13. Community Projects &amp; PM Tools Survey</strong> <span class="tag green">Practical</span><br>
+          Matt Stone vibe-coded a PM tools survey app in ~30 minutes, iterating features in real-time based on group feedback. Jason shared his Stakeholder Studio beta. Harry Parkes shared /promptly (reverse-engineers iterative prompts) and /balance (Claude usage limiter).
+          <div class="date">Throughout Feb</div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>Sentiment Snapshot</h2>
+      <div class="chart-container" style="height:260px;">
+        <canvas id="sentimentAI"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ GENERAL CHANNEL ═══════════════════════ -->
+  <div id="tab-general" class="tab-content">
+
+    <div class="stats-row">
+      <div class="stat"><div class="number">583</div><div class="label">Messages</div></div>
+      <div class="stat"><div class="number">107</div><div class="label">Active Members</div></div>
+      <div class="stat"><div class="number">23</div><div class="label">Active Days</div></div>
+      <div class="stat"><div class="number">17</div><div class="label">New Members</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Daily Message Volume</h2>
+      <div class="chart-container-wide">
+        <canvas id="dailyChartGeneral"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Most Active Contributors</h2>
+      <div class="chart-container">
+        <canvas id="contributorsGeneral"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Key Trends &amp; Themes</h2>
+      <ol class="trend-list">
+        <li>
+          <strong>1. Broken Hiring &mdash; CVs, ATS &amp; the Recruitment Crisis</strong> <span class="tag hot">Hottest Topic</span><br>
+          A major multi-day thread on how hiring is fundamentally broken. Andy Freeburn shared a Lovable-built interactive CV; Maria Chilikov and Caroline Clark debated ATS formatting. Discussion expanded into ghost job posts (Joana tracking 50% unfilled roles), zero-risk hiring mentality, and LinkedIn applicant number inflation. Graham Reed highlighted problems on both employer and applicant sides.
+          <div class="date">Feb 17&ndash;19</div>
+        </li>
+        <li>
+          <strong>2. Interview Horror Stories &amp; Neuro-Inclusivity</strong> <span class="tag hot">Emotional</span><br>
+          Carol's 7-interview process triggered a cascade of war stories: Sarah Baker-White (17 interviews), Neil Pleasants (11), Alistair Groves (7 ending when the company cancelled expansion). Jason Knight shared the story of an autistic friend who took his own life after repeated rejections, prompting important discussion about neuro-inclusivity in hiring.
+          <div class="date">Feb 21</div>
+        </li>
+        <li>
+          <strong>3. Personal Productivity &amp; Proving Value</strong> <span class="tag green">Practical</span><br>
+          Robin asked about tracking and proving product work week-by-week. Sascha advocated Obsidian + backlinks + Kanban; Scotty recommended structured plans; James Engelbert shared the "5522" weekly report framework. Conversation evolved into how to demonstrate value in 0-to-1 product work.
+          <div class="date">Feb 6&ndash;10</div>
+        </li>
+        <li>
+          <strong>4. Vibe Coding &amp; the PM Role Debate</strong> <span class="tag hot">Polarizing</span><br>
+          Sascha shared Saeed Khan's article arguing vibe coding is not a PM superpower, sparking a late-night debate. Maria Chilikov pushed back, arguing early-stage companies need PM/eng/GTM hybrids. Sascha favored team-based divergent thinking; Maria favored velocity and decisiveness.
+          <div class="date">Feb 24&ndash;25</div>
+        </li>
+        <li>
+          <strong>5. Hardware vs. Software Product Management</strong> <span class="tag">Philosophical</span><br>
+          Alan Arnfeld posed whether hardware PM differs from software PM. Dan Cohen argued the role is fundamentally the same at the abstraction level. Helen B countered that software PMs underestimate hardware NFRs. Caroline Clark shared experience with rugged fingerprint scanners for humanitarian projects. Consensus: core skills same, risk of blind spots significantly higher.
+          <div class="date">Feb 20</div>
+        </li>
+        <li>
+          <strong>6. ProductCon London</strong> <span class="tag green">Community Event</span><br>
+          The group collectively organized around ProductCon London on 24 Feb &mdash; Mikkel shared a 20% promo code, members offered work emails to help others register for free tickets, and Rebecca organized a meetup poll (20 voted yes). Strong community solidarity.
+          <div class="date">Feb 9&ndash;24</div>
+        </li>
+        <li>
+          <strong>7. 0-to-1 Product Work &mdash; Kill vs. Pivot</strong> <span class="tag">Philosophical</span><br>
+          Igor's poll about what hurts most in 0-to-1 work generated deep responses. Sascha emphasized holding space and not converging too early, noting 6-7 out of 10 initial options should blow up. Tom White highlighted founder emotional sunk equity.
+          <div class="date">Feb 17</div>
+        </li>
+        <li>
+          <strong>8. Capacity &amp; Engineering Estimates</strong> <span class="tag green">Practical</span><br>
+          Craig Unsworth's "Capacity is a Law of Physics, Not a Negotiation" sparked debate. Scotty pushed back with a story of engineers estimating 12 weeks but delivering in 6 through intense focus. Craig responded that burst sprints are doable but dangerous long-term. Quality river puns ensued.
+          <div class="date">Feb 12</div>
+        </li>
+        <li>
+          <strong>9. Managing Product Copy &amp; CMS</strong> <span class="tag">Technical</span><br>
+          Robin asked about managing versioned copy across in-app, push, SMS, and email. Jason recommended headless CMS (Contentful); Robin realized they already had Sanity but weren't using it. Multiple Figma-CMS plugins shared. Sascha warned about Airtable's temporary URLs.
+          <div class="date">Feb 27&ndash;28</div>
+        </li>
+        <li>
+          <strong>10. Private Equity &amp; Due Diligence</strong> <span class="tag amber">Rising Trend</span><br>
+          Alyx asked about PE experience. Craig works directly with PE funds. Joana's company was PE-acquired. David Magee shared PE-to-PE experience. Alyx proposed organizing a session on getting a business ready to be bought.
+          <div class="date">Feb 19</div>
+        </li>
+        <li>
+          <strong>11. Local Meetups &amp; Regional Community</strong> <span class="tag green">Community</span><br>
+          Community expanding beyond London. Scotty proposed a Richmond meetup; Jason suggested SE London; Tom White floated Birmingham/Oxford; Carla announced a new Liverpool tech meetup launching in April. The thread showed geographic diversification.
+          <div class="date">Feb 3&ndash;5, Feb 26&ndash;27</div>
+        </li>
+        <li>
+          <strong>12. Frameworks Workshop &amp; CPO Connect Events</strong> <span class="tag green">Community</span><br>
+          Free online "Frameworks, Judgment & Real-World Impact" session (19 Feb) featuring Alyx, Sascha, and Meg received strong feedback. CPO Connect Market Update (11 Feb) praised by multiple attendees. Rebecca and Alyx launched Product Economics workshop.
+          <div class="date">Feb 12&ndash;19</div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>Sentiment Snapshot</h2>
+      <div class="chart-container" style="height:260px;">
+        <canvas id="sentimentGeneral"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ LEADERSHIP CHANNEL ═══════════════════════ -->
+  <div id="tab-leadership" class="tab-content">
+
+    <div class="stats-row">
+      <div class="stat"><div class="number">88</div><div class="label">Messages</div></div>
+      <div class="stat"><div class="number">18</div><div class="label">Active Members</div></div>
+      <div class="stat"><div class="number">16</div><div class="label">Active Days</div></div>
+      <div class="stat"><div class="number">9</div><div class="label">New Members</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Daily Message Volume</h2>
+      <div class="chart-container-wide">
+        <canvas id="dailyChartLeadership"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Most Active Contributors</h2>
+      <div class="chart-container">
+        <canvas id="contributorsLeadership"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Key Trends &amp; Themes</h2>
+      <ol class="trend-list">
+        <li>
+          <strong>1. Interview Questions to Reveal True Culture</strong> <span class="tag hot">Most Active Thread</span><br>
+          James Engelbert asked about the smartest interview questions to uncover genuine growth mindset. Sascha recommended asking how decisions get made and about killed initiatives. Jamie shared 7 baseline culture due diligence questions. Jit warned about hiring managers who lie. Meg added questions about how often the org changes its model.
+          <div class="date">Feb 17</div>
+        </li>
+        <li>
+          <strong>2. Team Dysfunction &amp; Micromanagement</strong> <span class="tag hot">Deep Dive</span><br>
+          James described an adjacent team in turmoil where members complained about micromanagement but never to their manager. Sascha recommended removing the manager from retros and bringing in a neutral facilitator. Caroline challenged whether it was James's problem to solve. James proposed a three-step plan with team charters.
+          <div class="date">Feb 19</div>
+        </li>
+        <li>
+          <strong>3. Board Experience &amp; Non-Exec Roles</strong> <span class="tag green">Community Building</span><br>
+          Alyx Priestley asked for advice on positioning for board appointments. Sascha suggested building a community "board experience playbook." Gem added BCorp and EOS angles. Prasana proposed a dedicated "Board Talks" subgroup, which Gregor created.
+          <div class="date">Feb 1&ndash;3</div>
+        </li>
+        <li>
+          <strong>4. Changing Team Mindsets &amp; Delivery Culture</strong> <span class="tag">Practical</span><br>
+          Carla shared challenges transforming a team conditioned to "plod along" where newly-introduced targets were perceived as pressure. She described bringing leads into commercial understanding and using Jira cycle time data to illustrate slow velocity. James probed her approaches.
+          <div class="date">Feb 3&ndash;9</div>
+        </li>
+        <li>
+          <strong>5. M&amp;A Experiences &amp; Due Diligence</strong> <span class="tag amber">Emerging</span><br>
+          Natalia Jaszczuk raised the desire for dedicated M&A discussion, highlighting both practical DD concerns and softer aspects (people, strategic alignment). Carla responded with detailed experience of executing an aggressive M&A strategy, calling the people/alignment side the hardest part.
+          <div class="date">Feb 3</div>
+        </li>
+        <li>
+          <strong>6. Frameworks, Judgment &amp; Real-World Impact</strong> <span class="tag green">Community Event</span><br>
+          Free online session on 19 Feb featuring Alyx, Sascha, and Meg focused on when frameworks help vs. create bureaucracy, building leadership judgment, and evolving organizational capabilities.
+          <div class="date">Feb 12&ndash;19</div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>Sentiment Snapshot</h2>
+      <div class="chart-container" style="height:260px;">
+        <canvas id="sentimentLeadership"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ CROSS-CHANNEL INSIGHTS ═══════════════════════ -->
+  <div class="card">
+    <h2>Cross-Channel Insights</h2>
+    <ol class="trend-list">
+      <li>
+        <strong>The Hiring Crisis</strong> <span class="channel-badge badge-general">General</span> <span class="channel-badge badge-leadership">Leadership</span><br>
+        Broken hiring processes was the dominant cross-channel theme. General hosted the raw emotional energy (interview horror stories, neuro-inclusivity); Leadership focused on diagnosing culture through smarter interview questions. Combined: a community increasingly frustrated with how the industry hires.
+      </li>
+      <li>
+        <strong>AI Burnout &amp; Pace of Change</strong> <span class="channel-badge badge-ai">AI</span> <span class="channel-badge badge-general">General</span><br>
+        The AI channel discussed burnout from over-engagement with tools; General debated whether "vibe coding" is pushing PMs into low-leverage work. Both channels wrestled with the same question: how do you stay relevant without burning out?
+      </li>
+      <li>
+        <strong>Community Maturation</strong> <span class="channel-badge badge-general">General</span> <span class="channel-badge badge-leadership">Leadership</span><br>
+        45 new members across channels. Regional meetups expanding beyond London. New subgroups (Board Talks, HR Tech) spinning up. ProductCon coordination showed strong mutual support. The community is deepening, not just growing.
+      </li>
+      <li>
+        <strong>Frameworks vs. Pragmatism</strong> <span class="channel-badge badge-leadership">Leadership</span> <span class="channel-badge badge-general">General</span><br>
+        The Leadership channel's "Frameworks, Judgment & Real-World Impact" session echoed through General's debates on proving value, capacity physics, and 0-to-1 challenges. A community-wide appetite for practical wisdom over theoretical frameworks.
+      </li>
+    </ol>
+  </div>
+
+  <footer>Generated 1 Mar 2026 &middot; Analysis of CPO Connect WhatsApp Groups (AI, General, Leadership &amp; Culture)</footer>
+</div>
+
+<script>
+const chartDefaults = {
+  color: '#94a3b8',
+  borderColor: 'rgba(255,255,255,0.1)',
+};
+Chart.defaults.color = chartDefaults.color;
+Chart.defaults.borderColor = chartDefaults.borderColor;
+
+const tooltipStyle = {
+  backgroundColor: 'rgba(15,12,41,0.95)',
+  titleColor: '#c4b5fd',
+  bodyColor: '#e0e0e0',
+  borderColor: 'rgba(124,58,237,0.5)',
+  borderWidth: 1
+};
+
+// ══════════════════ AI CHANNEL CHARTS ══════════════════
+
+new Chart(document.getElementById('dailyChartAI'), {
+  type: 'bar',
+  data: {
+    labels: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28'],
+    datasets: [{
+      label: 'Messages',
+      data: [10,27,7,12,11,9,129,8,11,19,16,12,68,40,1,11,13,34,20,12,42,34,18,25,37,66,66,54],
+      backgroundColor: 'rgba(124,58,237,0.5)',
+      borderColor: 'rgba(167,139,250,0.8)',
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: tooltipStyle },
+    scales: {
+      x: { grid: { display: false }, title: { display: true, text: 'February 2026', color: '#64748b' } },
+      y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('contributorsAI'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Dave Killeen','Jason Knight','Erik Schwartz','Harry Parkes','Matt Stone','Caroline Clark','Alastair Preacher','Sascha Brossmann','Joana','Graham Reed','Others'],
+    datasets: [{
+      data: [184,88,52,47,39,39,36,29,27,17,254],
+      backgroundColor: [
+        'rgba(248,113,113,0.7)','rgba(251,146,60,0.7)','rgba(167,139,250,0.7)','rgba(52,211,153,0.7)',
+        'rgba(96,165,250,0.7)','rgba(244,114,182,0.7)','rgba(251,191,36,0.7)','rgba(129,140,248,0.7)',
+        'rgba(45,212,191,0.7)','rgba(251,146,60,0.5)','rgba(71,85,105,0.5)'
+      ],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'right', labels: { padding: 12, usePointStyle: true, pointStyle: 'circle' } } }
+  }
+});
+
+new Chart(document.getElementById('sentimentAI'), {
+  type: 'polarArea',
+  data: {
+    labels: ['Enthusiastic / Optimistic','Practical / Balanced','Skeptical / Critical','Philosophical / Cautious','Humorous / Social'],
+    datasets: [{
+      data: [35,30,15,12,8],
+      backgroundColor: [
+        'rgba(52,211,153,0.5)','rgba(96,165,250,0.5)','rgba(248,113,113,0.5)','rgba(167,139,250,0.5)','rgba(251,191,36,0.5)'
+      ],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'right', labels: { padding: 10, usePointStyle: true, pointStyle: 'circle' } } },
+    scales: { r: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { display: false } } }
+  }
+});
+
+// ══════════════════ GENERAL CHANNEL CHARTS ══════════════════
+
+new Chart(document.getElementById('dailyChartGeneral'), {
+  type: 'bar',
+  data: {
+    labels: ['2','3','5','6','7','9','10','11','12','13','14','16','17','18','19','20','21','23','24','25','26','27','28'],
+    datasets: [{
+      label: 'Messages',
+      data: [7,28,13,49,1,11,28,41,27,6,1,1,72,29,23,35,68,1,45,25,8,49,15],
+      backgroundColor: 'rgba(96,165,250,0.5)',
+      borderColor: 'rgba(96,165,250,0.8)',
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: tooltipStyle },
+    scales: {
+      x: { grid: { display: false }, title: { display: true, text: 'February 2026', color: '#64748b' } },
+      y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('contributorsGeneral'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Sascha Brossmann','Jason Knight','Scotty','Joana','Robin','Caroline Clark','Maria Chilikov','Sarah Baker-White','Tania','James Engelbert','Others'],
+    datasets: [{
+      data: [71,47,43,25,21,19,18,16,15,14,294],
+      backgroundColor: [
+        'rgba(129,140,248,0.7)','rgba(251,146,60,0.7)','rgba(248,113,113,0.7)','rgba(251,191,36,0.7)',
+        'rgba(52,211,153,0.7)','rgba(244,114,182,0.7)','rgba(96,165,250,0.7)','rgba(45,212,191,0.7)',
+        'rgba(167,139,250,0.7)','rgba(251,146,60,0.5)','rgba(71,85,105,0.5)'
+      ],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'right', labels: { padding: 12, usePointStyle: true, pointStyle: 'circle' } } }
+  }
+});
+
+new Chart(document.getElementById('sentimentGeneral'), {
+  type: 'polarArea',
+  data: {
+    labels: ['Practical / Balanced','Enthusiastic / Optimistic','Philosophical / Cautious','Skeptical / Critical','Humorous / Social'],
+    datasets: [{
+      data: [35,20,20,15,10],
+      backgroundColor: [
+        'rgba(96,165,250,0.5)','rgba(52,211,153,0.5)','rgba(167,139,250,0.5)','rgba(248,113,113,0.5)','rgba(251,191,36,0.5)'
+      ],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'right', labels: { padding: 10, usePointStyle: true, pointStyle: 'circle' } } },
+    scales: { r: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { display: false } } }
+  }
+});
+
+// ══════════════════ LEADERSHIP CHANNEL CHARTS ══════════════════
+
+new Chart(document.getElementById('dailyChartLeadership'), {
+  type: 'bar',
+  data: {
+    labels: ['1','2','3','5','7','9','10','11','12','13','17','18','19','23','25','27'],
+    datasets: [{
+      label: 'Messages',
+      data: [9,5,7,1,1,1,1,2,2,2,25,1,28,1,1,1],
+      backgroundColor: 'rgba(52,211,153,0.5)',
+      borderColor: 'rgba(52,211,153,0.8)',
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: tooltipStyle },
+    scales: {
+      x: { grid: { display: false }, title: { display: true, text: 'February 2026', color: '#64748b' } },
+      y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('contributorsLeadership'), {
+  type: 'doughnut',
+  data: {
+    labels: ['James Engelbert','Sascha Brossmann','Alyx Priestley','Caroline Clark','Carla','Meg Porter','Gregor Young','Others'],
+    datasets: [{
+      data: [27,23,5,4,4,3,2,20],
+      backgroundColor: [
+        'rgba(251,146,60,0.7)','rgba(129,140,248,0.7)','rgba(248,113,113,0.7)','rgba(244,114,182,0.7)',
+        'rgba(52,211,153,0.7)','rgba(96,165,250,0.7)','rgba(251,191,36,0.7)','rgba(71,85,105,0.5)'
+      ],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'right', labels: { padding: 12, usePointStyle: true, pointStyle: 'circle' } } }
+  }
+});
+
+new Chart(document.getElementById('sentimentLeadership'), {
+  type: 'polarArea',
+  data: {
+    labels: ['Practical / Balanced','Philosophical / Cautious','Enthusiastic / Optimistic','Humorous / Social','Skeptical / Critical'],
+    datasets: [{
+      data: [40,20,20,10,10],
+      backgroundColor: [
+        'rgba(96,165,250,0.5)','rgba(167,139,250,0.5)','rgba(52,211,153,0.5)','rgba(251,191,36,0.5)','rgba(248,113,113,0.5)'
+      ],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'right', labels: { padding: 10, usePointStyle: true, pointStyle: 'circle' } } },
+    scales: { r: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { display: false } } }
+  }
+});
+
+// ══════════════════ TAB SWITCHING ══════════════════
+
+function switchTab(channel) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  event.target.closest('.tab').classList.add('active');
+  document.getElementById('tab-' + channel).classList.add('active');
+}
+</script>
+</body>
+</html>
