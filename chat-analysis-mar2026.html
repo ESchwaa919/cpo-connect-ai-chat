@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPO Connect — March 2026 Chat Analysis</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.25rem;
+  }
+  .subtitle { color: #94a3b8; font-size: 1rem; margin-bottom: 0.5rem; }
+  .subtitle a { color: #a78bfa; text-decoration: none; }
+  .subtitle a:hover { text-decoration: underline; }
+  .prev-nav { font-size: 0.85rem; margin-bottom: 2.5rem; }
+  .prev-nav a { color: #a78bfa; text-decoration: none; opacity: 0.75; }
+  .prev-nav a:hover { opacity: 1; text-decoration: underline; }
+  .card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(10px);
+  }
+  .card h2 {
+    font-size: 1.15rem;
+    color: #c4b5fd;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+  .card h3 {
+    font-size: 1rem;
+    color: #93c5fd;
+    margin-bottom: 0.5rem;
+    margin-top: 1.25rem;
+    font-weight: 600;
+  }
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stat {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+  }
+  .stat .number {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #a78bfa, #60a5fa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stat .label { font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem; }
+  .chart-container { position: relative; height: 300px; margin: 1rem 0; }
+  .chart-container-wide { position: relative; height: 350px; margin: 1rem 0; }
+  .trend-list { list-style: none; }
+  .trend-list li {
+    padding: 0.85rem 1rem;
+    border-left: 3px solid #7c3aed;
+    margin-bottom: 0.75rem;
+    background: rgba(124,58,237,0.08);
+    border-radius: 0 8px 8px 0;
+    line-height: 1.5;
+  }
+  .trend-list li strong { color: #c4b5fd; }
+  .trend-list li .date { color: #64748b; font-size: 0.8rem; }
+  .tag {
+    display: inline-block;
+    background: rgba(96,165,250,0.15);
+    color: #93c5fd;
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    margin-right: 4px;
+    margin-top: 4px;
+  }
+  .tag.hot { background: rgba(248,113,113,0.2); color: #fca5a5; }
+  .tag.green { background: rgba(52,211,153,0.15); color: #6ee7b7; }
+  .tag.amber { background: rgba(251,191,36,0.15); color: #fcd34d; }
+  .tag.pink { background: rgba(244,114,182,0.15); color: #f9a8d4; }
+
+  .tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 0.6rem 1.2rem;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .tab:hover { background: rgba(255,255,255,0.1); color: #e0e0e0; }
+  .tab.active {
+    background: rgba(124,58,237,0.3);
+    border-color: rgba(167,139,250,0.5);
+    color: #c4b5fd;
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .channel-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 99px;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-weight: 600;
+  }
+  .badge-ai { background: rgba(167,139,250,0.2); color: #c4b5fd; }
+  .badge-general { background: rgba(96,165,250,0.2); color: #93c5fd; }
+  .badge-leadership { background: rgba(52,211,153,0.2); color: #6ee7b7; }
+
+  footer { text-align: center; color: #475569; margin-top: 2rem; font-size: 0.8rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>CPO Connect — All Channels</h1>
+  <p class="subtitle">March 2026 Chat Analysis &middot; 1 &ndash; 31 Mar 2026</p>
+  <p class="prev-nav"><a href="./chat-analysis-feb2026.html">&larr; February 2026</a></p>
+
+  <!-- Aggregate stats -->
+  <div class="stats-row">
+    <div class="stat"><div class="number">702</div><div class="label">Total Messages</div></div>
+    <div class="stat"><div class="number">3</div><div class="label">Channels</div></div>
+    <div class="stat"><div class="number">31</div><div class="label">Active Days</div></div>
+    <div class="stat"><div class="number">110+</div><div class="label">Active Members</div></div>
+    <div class="stat"><div class="number">&minus;53%</div><div class="label">Volume vs Feb</div></div>
+  </div>
+
+  <!-- Channel tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('ai')">// AI <span style="font-size:0.7rem;opacity:0.7">(379)</span></div>
+    <div class="tab" onclick="switchTab('general')">// General <span style="font-size:0.7rem;opacity:0.7">(202)</span></div>
+    <div class="tab" onclick="switchTab('leadership')">// Leadership &amp; Culture <span style="font-size:0.7rem;opacity:0.7">(121)</span></div>
+  </div>
+
+  <!-- ═══════════════════════ AI CHANNEL ═══════════════════════ -->
+  <div id="tab-ai" class="tab-content active">
+
+    <div class="stats-row">
+      <div class="stat"><div class="number">379</div><div class="label">Messages</div></div>
+      <div class="stat"><div class="number">56</div><div class="label">Active Members</div></div>
+      <div class="stat"><div class="number">29</div><div class="label">Active Days</div></div>
+      <div class="stat"><div class="number">&minus;53%</div><div class="label">vs February</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Daily Message Volume</h2>
+      <div class="chart-container-wide">
+        <canvas id="dailyChartAI"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Most Active Contributors</h2>
+      <div class="chart-container">
+        <canvas id="contributorsAI"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Key Trends &amp; Themes</h2>
+      <ol class="trend-list">
+        <li>
+          <strong>1. Claude Outage &amp; the Burnout Hypothesis</strong> <span class="tag hot">Hottest Moment</span><br>
+          On 11 Mar Claude went down for hours mid-afternoon UK time and the channel exploded into a mix of panic, jokes (&ldquo;have a cup of tea&rdquo;, &ldquo;I&rsquo;m going out for some food&rdquo;), and a serious thread. Caroline Clark articulated the &ldquo;transitional work&rdquo; theory: AI is squeezing out the low-effort, low-intensity tasks that used to act as a buffer between bursts of intense work, leaving only high-effort cognitive load and a recipe for burnout. Dave Killeen agreed that directing multiple agents is &ldquo;hugely tiring and also fun but draining.&rdquo; The most resonant idea of the month.
+          <div class="date">Mar 11</div>
+        </li>
+        <li>
+          <strong>2. Dex Goes Big &mdash; Apple Outreach &amp; Community Schools</strong> <span class="tag green">Community Event</span><br>
+          Dave Killeen took a working week off to go &ldquo;all Dex vibing&rdquo; after a senior contact at Apple running enterprise AI reached out for a meeting. Aakash dropped a video walkthrough, and Dave started planning a Dex release schedule with a Releases.md + SessionStart hook governance pattern. By month-end Dave was scoping an MTP-sponsored programme to bring Dex into schools, parents&rsquo; groups, and Centrepoint outreach.
+          <div class="date">Mar 11&ndash;26</div>
+        </li>
+        <li>
+          <strong>3. Engineering Productivity, Measured</strong> <span class="tag green">Practical</span><br>
+          Ryan shared real numbers from rolling out Codex/CodeRabbit across his ~30-developer team: a ~70% reduction in dev effort on certain tasks and a measurable drop in defects per release, with backing data on velocity and bug investigation time. Multi-day deep dive on how to actually measure efficiency, defects prevented, QA bottlenecks, and what 2-week sprints look like when output meaningfully accelerates. Harry and others pushed for Ryan to run a community walkthrough.
+          <div class="date">Mar 12&ndash;13</div>
+        </li>
+        <li>
+          <strong>4. Wispr Flow Wins the Speech-to-Text Wars</strong> <span class="tag green">Practical</span><br>
+          Harry kicked off a search for the best speech-to-text. After a flurry of opinions (Wispr, Superwhisper, Krisp.ai, voice notes &rarr; Gemini &rarr; Claude pipelines) the consensus crystallised around Wispr Flow, with caveats about US-hours slowdown and noisy environments. Dave Killeen flagged Superwhisper&rsquo;s mode prompts as a flexibility win. Multiple referral codes traded.
+          <div class="date">Mar 10&ndash;11</div>
+        </li>
+        <li>
+          <strong>5. Delve, Cursor &amp; the Trust Crash</strong> <span class="tag hot">Polarizing</span><br>
+          Two scandals hit in 24 hours. First, leaked screenshots suggested Cursor was running on Kimi (open-source) despite implying a proprietary model. Then a Substack expos&eacute; on Delve &mdash; a Forbes 30-Under-30 &ldquo;compliance&rdquo; startup &mdash; revealed an exposed Supabase, accessible Notion, and credible &ldquo;fake compliance as a service&rdquo; allegations. Joana: the Lovable ecosystem is &ldquo;a giant lawsuit waiting to happen.&rdquo; Sascha: &ldquo;Something is rotten in the state of Denmark.&rdquo;
+          <div class="date">Mar 20&ndash;21</div>
+        </li>
+        <li>
+          <strong>6. Agentic Browser &amp; CLI vs MCP Wars</strong> <span class="tag">Industry</span><br>
+          Erik Schwartz: &ldquo;We are now entering the Agentic Browser wars.&rdquo; Triggered by Chrome 146&rsquo;s CLI release, then reinforced by Claude Code Channels launching mid-month. Dave Killeen published a newsletter arguing the WebMCP standard will be widely adopted because most browsers are Chromium-based. Max Mizzi shared a Scalekit article on MCP vs CLI &mdash; rough consensus: bright future for the CLI + skills model, content bloat is a real MCP problem.
+          <div class="date">Mar 16&ndash;20</div>
+        </li>
+        <li>
+          <strong>7. Liability, Trust &amp; the Real AI Moat</strong> <span class="tag">Philosophical</span><br>
+          Triggered by a member&rsquo;s Substack on B2B SaaS rethinking. Matt Stone: the differentiator is trust. Caroline highlighted the maintenance burden of self-built apps. Ahron raised the regulated-business angle &mdash; banks own AWS&rsquo;s problems in the eyes of regulators, so AI provider failures will land on the customer too. Sascha: prompt injection makes LLMs &ldquo;impossible to protect&rdquo; until a new architecture supersedes transformers. Elena Cat&oacute;n referenced Harari&rsquo;s Davos question on AI legal personhood.
+          <div class="date">Mar 22&ndash;23</div>
+        </li>
+        <li>
+          <strong>8. Anthropic vs OpenAI &mdash; Velocity as Strategy</strong> <span class="tag hot">Industry</span><br>
+          Erik flagged the contrast: Anthropic shipping multiple features daily while OpenAI shut down Sora video and reorganised. Dispatch announcement got 24M views in 24 hours, 70M+ in a week. Caroline noted &ldquo;red flags&rdquo; in OpenAI&rsquo;s complex org structure (Fidji Simo / Kevin Weil split, Sam in founder mode). Ed and Dave Killeen pushed back: shipping fast isn&rsquo;t the same as shipping right &mdash; Dispatch felt half-baked, slow on enterprise rollouts, and several members couldn&rsquo;t even find features Anthropic announced.
+          <div class="date">Mar 25</div>
+        </li>
+        <li>
+          <strong>9. AI for Kids &amp; Community Tech Service</strong> <span class="tag green">Community</span><br>
+          Jessie opened a thread about partnering with grass-roots charities to bring AI literacy to children without easy tech access. Quickly grew into a roster of routes: Raspberry Pi Foundation Code Clubs, Imagi, Oak National Academy, British Science Association, STEM Ambassadors. One member is doing primary-school Science Week sessions with a browser game his 8-year-old co-built (a llama catching bananas, in pyjamas, in the Bahamas). Dave Killeen offered to get MTP to sponsor the effort.
+          <div class="date">Mar 26</div>
+        </li>
+        <li>
+          <strong>10. Layoffs, &ldquo;Intelligence Cost to Zero&rdquo; &amp; the Job Market</strong> <span class="tag amber">Macro</span><br>
+          Atlassian announced ~1,600 layoffs. Harry: &ldquo;Headcount theatre at the top, actual pain at the bottom.&rdquo; Dave Killeen hoped it would &ldquo;free up amazing talent&rdquo;, prompting Jason Knight to ask sharply what &ldquo;intelligence cost to zero&rdquo; actually means &mdash; &ldquo;like, actually, without smirking.&rdquo; Max Mizzi gave a lengthy pushback: VC subsidies are masking the real unit economics, the cloud-compute analogy is being misused. Karpathy&rsquo;s job-impact analysis added fuel; Joana: Europe needs its own version.
+          <div class="date">Mar 12&ndash;16</div>
+        </li>
+        <li>
+          <strong>11. OpenClaw / Home AI Infrastructure</strong> <span class="tag green">Practical</span><br>
+          Harry and Erik Schwartz compared OpenClaw setups. Harry put it on an old Lenovo Think Centre with 16GB RAM, currently driving with Sonnet 4.5 to keep token costs sane. Discussion of agentmail.to (giving the agent its own email), giving it a dedicated WhatsApp number, and an A2A async relay between OpenClaw and Claude. Prachi requested a community learning session. Multiple OpenClaw alternatives surfaced: Paperclip, Hermes Agent (Nous Research), IronClaw.
+          <div class="date">Mar 8&ndash;11</div>
+        </li>
+        <li>
+          <strong>12. Harry Parkes Ships meet_</strong> <span class="tag green">Community Build</span><br>
+          Harry teased an agent-native scheduling tool, *meet_*, on 20 Mar with founder pricing for the first 50 sign-ups. Activated on 28 Mar (claim your name at getmeet.ai). On 30 Mar he shipped the &ldquo;intelligence layer&rdquo; with natural-language scheduling. Erik tested it on 31 Mar: &ldquo;This is slick Harry. Well done.&rdquo; A clean example of a member shipping a real product live in front of the community over 11 days.
+          <div class="date">Mar 20&ndash;31</div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>Sentiment Snapshot</h2>
+      <div class="chart-container" style="height:260px;">
+        <canvas id="sentimentAI"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ GENERAL CHANNEL ═══════════════════════ -->
+  <div id="tab-general" class="tab-content">
+
+    <div class="stats-row">
+      <div class="stat"><div class="number">202</div><div class="label">Messages</div></div>
+      <div class="stat"><div class="number">57</div><div class="label">Active Members</div></div>
+      <div class="stat"><div class="number">18</div><div class="label">Active Days</div></div>
+      <div class="stat"><div class="number">&minus;65%</div><div class="label">vs February</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Daily Message Volume</h2>
+      <div class="chart-container-wide">
+        <canvas id="dailyChartGeneral"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Most Active Contributors</h2>
+      <div class="chart-container">
+        <canvas id="contributorsGeneral"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Key Trends &amp; Themes</h2>
+      <ol class="trend-list">
+        <li>
+          <strong>1. The PM Tools Stack Debate</strong> <span class="tag hot">Hottest Topic</span><br>
+          Robin asked a simple question about the best PM software for strategic planning, OKRs, roadmapping, backlogs and customer insights &mdash; and lit a 50-message thread. Productboard, ProdPad, Aha!, Airfocus, Craft.io all surfaced. Then came the line of the month from another member: &ldquo;Jira for work, PowerPoint for roadmaps. Undefeated combo.&rdquo; Ahron: &ldquo;&lsquo;PowerPoint for roadmaps&rsquo; is the saddest statement ever.&rdquo; Howard quipped: &ldquo;Yes, I lose sleep over them!&rdquo; Sascha argued for Miro + Notion over single-tool sprawl.
+          <div class="date">Mar 18</div>
+        </li>
+        <li>
+          <strong>2. Atomic Research &amp; Knowledge Architecture</strong> <span class="tag">Practical</span><br>
+          Spinning out of the PM tools thread, Sascha turned the conversation into a deep cut on knowledge management: Tomer Sharon&rsquo;s Atomic Research, the Ladder of Inference (Argyris/Senge), and Andy Matuschak&rsquo;s public Zettelkasten. The thesis: &ldquo;There is no clean workflow. It&rsquo;s always messy at some point. You only get to decide where the complexity and friction shall live in the system.&rdquo;
+          <div class="date">Mar 18</div>
+        </li>
+        <li>
+          <strong>3. TESCREAL &mdash; The 93% Awareness Gap</strong> <span class="tag hot">Polarizing</span><br>
+          Caroline Clark dropped a one-question poll: &ldquo;Have you ever heard of TESCREAL?&rdquo; Result: 41 of 44 votes were &ldquo;No.&rdquo; Howard: &ldquo;You need a fourth option: No, please write an article about it.&rdquo; A few days later Caroline did exactly that, publishing &ldquo;The Seven Hidden Beliefs Driving Silicon Valley.&rdquo; Multiple members admitted alarm; Jessie announced she was &ldquo;off to the woods to cuddle a tree&rdquo;; Gregor recommended The Last Invention podcast for context.
+          <div class="date">Mar 20&ndash;23</div>
+        </li>
+        <li>
+          <strong>4. Signal Drift &mdash; Influence as a Neurodivergent Leader</strong> <span class="tag green">Practical</span><br>
+          Dave (the 7479-suffix neurodivergent leadership coach) cross-posted his MindTheProduct article on &ldquo;Signal Drift&rdquo; &mdash; the slow erosion of strategic influence for leaders who think differently. Pana connected it to Barbara Minto&rsquo;s Pyramid Principle. Caroline raised the question of whether neurodivergent leaders should adopt rigid &ldquo;executive presence&rdquo; norms or push back. James Engelbert: &ldquo;This is brilliant, I can finally name it!&rdquo;
+          <div class="date">Mar 20&ndash;26</div>
+        </li>
+        <li>
+          <strong>5. Six Nations Live &mdash; The Whole Group Watches Rugby</strong> <span class="tag green">Community</span><br>
+          Sarah Baker-White ran a poll on who would win the rugby on 14 March (winning option: &ldquo;There&rsquo;s rugby?&rdquo; &mdash; tied with England). She then live-texted the entire match while ITVx crashed on a member&rsquo;s TV. &ldquo;Best match so far (even as an aussie).&rdquo; A reminder that this group is also a place to just hang out.
+          <div class="date">Mar 14</div>
+        </li>
+        <li>
+          <strong>6. PRFAQ Templates &amp; the Amazon Diaspora</strong> <span class="tag green">Practical</span><br>
+          Prachi asked for a Claude-ready PRFAQ project template. Multiple Amazon alums offered help. Chanade volunteered to export hers from Confluence into a shared Google Doc for the community. A small but characteristic example of the channel&rsquo;s give-it-away culture.
+          <div class="date">Mar 19&ndash;20</div>
+        </li>
+        <li>
+          <strong>7. MVP Definition Wars</strong> <span class="tag">Philosophical</span><br>
+          Triggered by a 0&rarr;1 product question. Howard pushed for &ldquo;Minimum Valuable Product&rdquo;; another member proposed &ldquo;MRP &mdash; Market Ready Product / Minimum Releasable Product&rdquo;; Sascha noted the original meaning was always &ldquo;Minimum Viable Prototype&rdquo; for value-prop validation. The annual MVP-naming relitigation, but with sharper edges thanks to AI making prototypes nearly free.
+          <div class="date">Mar 18&ndash;19</div>
+        </li>
+        <li>
+          <strong>8. ClickUp vs Jira &amp; Reforge / Miro Consolidation</strong> <span class="tag">Industry</span><br>
+          Nick Whitford asked for a real opinion on ClickUp as a Jira/Confluence alternative; Gregor and a former Love Holidays migrator both endorsed it for OKR laddering and stakeholder accessibility. Separately, Reforge joined Miro &mdash; member commentary noted the parallel to Mind the Product joining Pendo. Speculation: ProductSchool may pivot from education to AI consulting; Hustle Badger ribbing duly ensued.
+          <div class="date">Mar 20, Mar 24</div>
+        </li>
+        <li>
+          <strong>9. Hiring Threads &amp; Network Help</strong> <span class="tag green">Community</span><br>
+          A steady stream of hiring asks throughout the month: an EasyJet contact request, a Head of User Research role re-advertised at a major brand, a 0.6 FTE Product Manager role at a national charity, an outsourced QA recommendation request (Zoonou/Qualitest surfaced), and a request to mentor a female head of data. Quieter than February&rsquo;s emotional hiring-crisis thread, but the network plumbing is steady.
+          <div class="date">Mar 4, 13, 19, 31</div>
+        </li>
+        <li>
+          <strong>10. Proof-of-Work Challenge Resurfaces</strong> <span class="tag amber">Emerging</span><br>
+          Joana revived an earlier thread on the &ldquo;Proof of Work&rdquo; challenge: how do you find people you actually want on your team in a world flooded with AI-enhanced CVs? She started a separate WhatsApp group for anyone wanting to keep the thread going.
+          <div class="date">Mar 2</div>
+        </li>
+        <li>
+          <strong>11. European SaaS Snapshot</strong> <span class="tag">Industry</span><br>
+          Arttu, a fractional CPO joining from Helsinki, shared a 12-month European SaaS market analysis: UK biggest, Italy fastest growing. Welcomed warmly. The community continues to widen geographically.
+          <div class="date">Mar 20</div>
+        </li>
+        <li>
+          <strong>12. Damon&rsquo;s Claude-Built Pitch Deck</strong> <span class="tag green">Practical</span><br>
+          A member asked what beats &ldquo;attach a slide deck&rdquo; for sharing pitches. Damon shared a Claude-built deck for an interview (with a remote-controlled mobile companion for advancing slides). Asked if the panel loved it: &ldquo;Difficult for them to say in an interview context but they clearly loved it 😂.&rdquo;
+          <div class="date">Mar 14</div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>Sentiment Snapshot</h2>
+      <div class="chart-container" style="height:260px;">
+        <canvas id="sentimentGeneral"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ LEADERSHIP CHANNEL ═══════════════════════ -->
+  <div id="tab-leadership" class="tab-content">
+
+    <div class="stats-row">
+      <div class="stat"><div class="number">121</div><div class="label">Messages</div></div>
+      <div class="stat"><div class="number">23</div><div class="label">Active Members</div></div>
+      <div class="stat"><div class="number">18</div><div class="label">Active Days</div></div>
+      <div class="stat"><div class="number">+38%</div><div class="label">vs February</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Daily Message Volume</h2>
+      <div class="chart-container-wide">
+        <canvas id="dailyChartLeadership"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Most Active Contributors</h2>
+      <div class="chart-container">
+        <canvas id="contributorsLeadership"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Key Trends &amp; Themes</h2>
+      <ol class="trend-list">
+        <li>
+          <strong>1. Which Human Skills Atrophy First in the AI Era</strong> <span class="tag hot">Most Active Thread</span><br>
+          James Engelbert opened with the question: as AI takes more cognitive and admin load off people-leaders, which human skills atrophy fastest? Aaron&rsquo;s answer set the tone &mdash; sensemaking, judgement, and writing-as-thinking. Caroline Clark added comprehension: she &ldquo;sometimes uses Claude to summarise academic papers and finds it gets the summary wrong.&rdquo; Quoting Thich Nhat Hanh: &ldquo;no mud, no lotus.&rdquo; Nick Whitford reverted to pen-and-paper for meeting notes: &ldquo;not just feel more cognitively tuned, it *feels* good too.&rdquo; Sweden moving back to printed books cited as a leading indicator.
+          <div class="date">Mar 8&ndash;10</div>
+        </li>
+        <li>
+          <strong>2. Imposter Phenomenon in Product &mdash; the 96% Stat</strong> <span class="tag hot">Deep Dive</span><br>
+          Caroline Clark shared her own research: 96% of product people surveyed reported imposter feelings. Triggered the longest thread of the month. Sascha added &ldquo;insecure overachievers&rdquo; as an adjacent category and proposed co-creating a Wardley Mapping session on competence frameworks. The group converged on a few theories: product is a rapidly evolving field with no canonical educational path; impact is lagging and indirect; and product is constantly &ldquo;educating&rdquo; orgs on its own value, which corrodes confidence.
+          <div class="date">Mar 12&ndash;13</div>
+        </li>
+        <li>
+          <strong>3. Burnout &mdash; Sharing the Stories</strong> <span class="tag amber">Personal</span><br>
+          The imposter thread spilled into burnout. Caroline shared her 2023 burnout: cynicism was the first symptom &mdash; the catalyst for starting her own company. Ahron: &ldquo;you have no idea you&rsquo;re burnt out till you&rsquo;re in it fully.&rdquo; Caroline closed: &ldquo;What can happen is we don&rsquo;t talk about them because of shame. I really appreciate people wading in on this.&rdquo; A standout moment of vulnerability and trust in the channel.
+          <div class="date">Mar 13</div>
+        </li>
+        <li>
+          <strong>4. PM &harr; Engineering Friction at the C-suite Level</strong> <span class="tag">Practical</span><br>
+          Ahron&rsquo;s pet peeve: &ldquo;a PM writing a story asking for an API to be built.&rdquo; The conversation rose up the org chart &mdash; the CPO/CTO relationship usually mirrors PM/eng friction below. Aaron reframed SLT as &ldquo;Senior Leadership *Group*&rdquo; rather than Team. Discussion of CFO partnerships and how engineering background buys CTO trust but other C-suite peers take more time.
+          <div class="date">Mar 13</div>
+        </li>
+        <li>
+          <strong>5. Outcomes vs Outputs &amp; the &ldquo;Outcome Lifecycle&rdquo;</strong> <span class="tag">Philosophical</span><br>
+          Nick Whitford pushed back on Joana&rsquo;s &ldquo;nobody gets promoted for writing a great PRD&rdquo; line: if product owns outcomes, then it owns the &ldquo;outcome lifecycle&rdquo; &mdash; forecasted metric movements, observed movements, commercial impacts. The orgs love outputs because outputs are tangible; product&rsquo;s job is to make outcomes equally tangible.
+          <div class="date">Mar 13</div>
+        </li>
+        <li>
+          <strong>6. Signal Drift &amp; Neurodivergent Leadership Influence</strong> <span class="tag green">Community</span><br>
+          Dave (the neurodivergent-leadership coach) shared his Signal Drift article in this channel too. Aktar: &ldquo;Really helpful to name and characterise the nuances of these conversations. Particularly pertinent in my situation right now.&rdquo; James Engelbert observed how naming a phenomenon precisely changes how the group processes it. Connected back to the imposter and skills-atrophy threads &mdash; same family of concerns, different angles.
+          <div class="date">Mar 18&ndash;26</div>
+        </li>
+        <li>
+          <strong>7. AI &amp; &ldquo;Performing&rdquo; Competence</strong> <span class="tag amber">Rising Trend</span><br>
+          Caroline shared a British Psychological Society piece on the difference between *being* competent and *performing* competence with AI. Jamie added that junior/mid practitioners using AI at every step before developing their own internal models is the real long-term risk. James: &ldquo;How do leaders create space for these skills to stay sharp when the allure to just chuck into AI is so strong?&rdquo; The question landed without a clean answer &mdash; but a strong indicator of where the channel is heading next.
+          <div class="date">Mar 25&ndash;26</div>
+        </li>
+        <li>
+          <strong>8. Confidential AI Adoption Sessions</strong> <span class="tag green">Community Initiative</span><br>
+          Caroline opened end-of-month bookings for confidential 30-minute sessions with senior product leaders &mdash; specifically on the gap between executive expectations of AI adoption and what&rsquo;s actually happening on the ground. Tally form shared as an alternative to live calls. A tangible follow-through on the month&rsquo;s recurring &ldquo;belief and culture&rdquo; thread.
+          <div class="date">Mar 30&ndash;31</div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>Sentiment Snapshot</h2>
+      <div class="chart-container" style="height:260px;">
+        <canvas id="sentimentLeadership"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ CROSS-CHANNEL INSIGHTS ═══════════════════════ -->
+  <div class="card">
+    <h2>Cross-Channel Insights</h2>
+    <ol class="trend-list">
+      <li>
+        <strong>The Burnout / Atrophy Loop</strong> <span class="channel-badge badge-ai">AI</span> <span class="channel-badge badge-leadership">Leadership</span><br>
+        AI hosted the felt experience &mdash; Caroline&rsquo;s &ldquo;transitional work&rdquo; theory after the Claude outage, Dave Killeen&rsquo;s admission that directing agents is draining. Leadership hosted the diagnosis &mdash; James&rsquo;s skills-atrophy thread, the imposter and burnout discussion, the &ldquo;performing vs being competent&rdquo; piece. Same underlying anxiety, two registers: practitioner and leadership.
+      </li>
+      <li>
+        <strong>Trust Is the New Moat</strong> <span class="channel-badge badge-ai">AI</span> <span class="channel-badge badge-general">General</span><br>
+        AI: the Delve / Cursor / Lovable trust crashes, plus the deep liability thread on regulated businesses. General: Dave&rsquo;s Signal Drift article on how senior leaders lose influence. The community seems to be settling on a shared answer to &ldquo;what&rsquo;s defensible when AI commoditises building?&rdquo; &mdash; the answer is trust, judgement, and accountability.
+      </li>
+      <li>
+        <strong>Caroline Clark&rsquo;s Centre-of-Gravity Month</strong> <span class="channel-badge badge-ai">AI</span> <span class="channel-badge badge-general">General</span> <span class="channel-badge badge-leadership">Leadership</span><br>
+        Top contributor in Leadership (32 messages), highly active in AI (16) and General (9). Drove the TESCREAL article, the burnout/imposter thread, the &ldquo;Manufacturing Consent&rdquo; AI piece, and started end-of-month confidential sessions on AI adoption. A clear example of one member providing the connective theme tissue across all three channels in a single month.
+      </li>
+      <li>
+        <strong>The Volume Contraction</strong> <span class="channel-badge badge-ai">AI</span> <span class="channel-badge badge-general">General</span> <span class="channel-badge badge-leadership">Leadership</span><br>
+        Total messages dropped from 1,483 in February to 702 in March &mdash; a 53% contraction. AI fell 53%, General fell 65%, but Leadership *grew* 38%. The serious meta-conversations migrated to Leadership while the high-volume AI tooling chatter cooled off. Possible factors: post-February reversion, the mid-month Claude outage, holiday/half-term timing &mdash; and a community that&rsquo;s spending more time building and less time talking.
+      </li>
+      <li>
+        <strong>Members Shipping in Public</strong> <span class="channel-badge badge-ai">AI</span> <span class="channel-badge badge-general">General</span><br>
+        Harry Parkes shipped *meet_* (agent-native scheduling) live across 11 days. Damon shared his Claude-built interview pitch deck. Dave Killeen shipped Dex updates and a Releases.md governance pattern. Ryan shared real engineering productivity numbers with full data. The community continues to function as a live build studio.
+      </li>
+    </ol>
+  </div>
+
+  <footer>Generated 10 Apr 2026 &middot; Analysis of CPO Connect WhatsApp Groups (AI, General, Leadership &amp; Culture)</footer>
+</div>
+
+<script>
+const chartDefaults = {
+  color: '#94a3b8',
+  borderColor: 'rgba(255,255,255,0.1)',
+};
+Chart.defaults.color = chartDefaults.color;
+Chart.defaults.borderColor = chartDefaults.borderColor;
+
+const tooltipStyle = {
+  backgroundColor: 'rgba(15,12,41,0.95)',
+  titleColor: '#c4b5fd',
+  bodyColor: '#e0e0e0',
+  borderColor: 'rgba(124,58,237,0.5)',
+  borderWidth: 1
+};
+
+// ══════════════════ AI CHANNEL CHARTS ══════════════════
+
+new Chart(document.getElementById('dailyChartAI'), {
+  type: 'bar',
+  data: {
+    labels: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31'],
+    datasets: [{
+      label: 'Messages',
+      data: [7,24,6,18,9,15,0,16,7,21,40,33,11,1,2,20,3,0,14,21,12,14,8,5,33,23,2,1,9,1,3],
+      backgroundColor: 'rgba(124,58,237,0.5)',
+      borderColor: 'rgba(167,139,250,0.8)',
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: tooltipStyle },
+    scales: {
+      x: { grid: { display: false }, title: { display: true, text: 'March 2026', color: '#64748b' } },
+      y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('contributorsAI'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Dave Killeen','Harry Parkes','Matt Stone','Sascha Brossmann','Erik Schwartz','Joana','Caroline Clark','Member ···9211','Ryan','Jason Knight','Others'],
+    datasets: [{
+      data: [44,42,26,25,25,22,16,16,13,13,137],
+      backgroundColor: [
+        'rgba(248,113,113,0.7)','rgba(52,211,153,0.7)','rgba(96,165,250,0.7)','rgba(129,140,248,0.7)',
+        'rgba(167,139,250,0.7)','rgba(251,191,36,0.7)','rgba(244,114,182,0.7)','rgba(45,212,191,0.7)',
+        'rgba(251,146,60,0.7)','rgba(251,146,60,0.5)','rgba(71,85,105,0.5)'
+      ],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'right', labels: { padding: 12, usePointStyle: true, pointStyle: 'circle' } } }
+  }
+});
+
+new Chart(document.getElementById('sentimentAI'), {
+  type: 'polarArea',
+  data: {
+    labels: ['Practical / Balanced','Skeptical / Critical','Enthusiastic / Optimistic','Philosophical / Cautious','Humorous / Social'],
+    datasets: [{
+      data: [32,25,20,15,8],
+      backgroundColor: [
+        'rgba(96,165,250,0.5)','rgba(248,113,113,0.5)','rgba(52,211,153,0.5)','rgba(167,139,250,0.5)','rgba(251,191,36,0.5)'
+      ],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'right', labels: { padding: 10, usePointStyle: true, pointStyle: 'circle' } } },
+    scales: { r: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { display: false } } }
+  }
+});
+
+// ══════════════════ GENERAL CHANNEL CHARTS ══════════════════
+
+new Chart(document.getElementById('dailyChartGeneral'), {
+  type: 'bar',
+  data: {
+    labels: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31'],
+    datasets: [{
+      label: 'Messages',
+      data: [0,4,0,5,1,0,0,0,0,0,0,1,6,24,2,7,1,52,22,33,0,5,10,15,4,0,6,0,0,0,4],
+      backgroundColor: 'rgba(96,165,250,0.5)',
+      borderColor: 'rgba(96,165,250,0.8)',
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: tooltipStyle },
+    scales: {
+      x: { grid: { display: false }, title: { display: true, text: 'March 2026', color: '#64748b' } },
+      y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('contributorsGeneral'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Sascha Brossmann','Howard','Robin','Sarah Baker-White','Member ···4106','Caroline Clark','Jason Knight','Harry Parkes','Joana','Member ···1055','Others'],
+    datasets: [{
+      data: [16,14,12,10,10,9,8,6,6,6,105],
+      backgroundColor: [
+        'rgba(129,140,248,0.7)','rgba(96,165,250,0.7)','rgba(52,211,153,0.7)','rgba(45,212,191,0.7)',
+        'rgba(251,146,60,0.7)','rgba(244,114,182,0.7)','rgba(248,113,113,0.7)','rgba(167,139,250,0.7)',
+        'rgba(251,191,36,0.7)','rgba(251,146,60,0.5)','rgba(71,85,105,0.5)'
+      ],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'right', labels: { padding: 12, usePointStyle: true, pointStyle: 'circle' } } }
+  }
+});
+
+new Chart(document.getElementById('sentimentGeneral'), {
+  type: 'polarArea',
+  data: {
+    labels: ['Practical / Balanced','Humorous / Social','Philosophical / Cautious','Skeptical / Critical','Enthusiastic / Optimistic'],
+    datasets: [{
+      data: [35,22,18,15,10],
+      backgroundColor: [
+        'rgba(96,165,250,0.5)','rgba(251,191,36,0.5)','rgba(167,139,250,0.5)','rgba(248,113,113,0.5)','rgba(52,211,153,0.5)'
+      ],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'right', labels: { padding: 10, usePointStyle: true, pointStyle: 'circle' } } },
+    scales: { r: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { display: false } } }
+  }
+});
+
+// ══════════════════ LEADERSHIP CHANNEL CHARTS ══════════════════
+
+new Chart(document.getElementById('dailyChartLeadership'), {
+  type: 'bar',
+  data: {
+    labels: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31'],
+    datasets: [{
+      label: 'Messages',
+      data: [0,0,0,0,0,0,1,6,4,15,0,1,60,0,0,1,1,2,1,12,3,3,1,0,1,7,0,0,0,1,1],
+      backgroundColor: 'rgba(52,211,153,0.5)',
+      borderColor: 'rgba(52,211,153,0.8)',
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: tooltipStyle },
+    scales: {
+      x: { grid: { display: false }, title: { display: true, text: 'March 2026', color: '#64748b' } },
+      y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('contributorsLeadership'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Caroline Clark','James Engelbert','Aaron','Sascha Brossmann','Ahron','Joana','Jessie','Dave (Signal Drift)','Others'],
+    datasets: [{
+      data: [32,21,12,8,7,7,6,4,24],
+      backgroundColor: [
+        'rgba(244,114,182,0.7)','rgba(251,146,60,0.7)','rgba(96,165,250,0.7)','rgba(129,140,248,0.7)',
+        'rgba(167,139,250,0.7)','rgba(251,191,36,0.7)','rgba(52,211,153,0.7)','rgba(45,212,191,0.7)',
+        'rgba(71,85,105,0.5)'
+      ],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'right', labels: { padding: 12, usePointStyle: true, pointStyle: 'circle' } } }
+  }
+});
+
+new Chart(document.getElementById('sentimentLeadership'), {
+  type: 'polarArea',
+  data: {
+    labels: ['Philosophical / Cautious','Practical / Balanced','Personal / Vulnerable','Enthusiastic / Optimistic','Skeptical / Critical'],
+    datasets: [{
+      data: [35,25,20,12,8],
+      backgroundColor: [
+        'rgba(167,139,250,0.5)','rgba(96,165,250,0.5)','rgba(244,114,182,0.5)','rgba(52,211,153,0.5)','rgba(248,113,113,0.5)'
+      ],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'right', labels: { padding: 10, usePointStyle: true, pointStyle: 'circle' } } },
+    scales: { r: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { display: false } } }
+  }
+});
+
+// ══════════════════ TAB SWITCHING ══════════════════
+
+function switchTab(channel) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  event.target.closest('.tab').classList.add('active');
+  document.getElementById('tab-' + channel).classList.add('active');
+}
+</script>
+</body>
+</html>
